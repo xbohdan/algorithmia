@@ -13,17 +13,23 @@ namespace graphs {
 
 	bool graph::del_node(int n)
 	{
-		for (auto itr = edges.begin(); itr != edges.end(); ++itr)
-			itr->second.erase(n);
-		return edges.erase(n) != 0;
+		auto it1 = edges.find(n);
+		if (it1 != edges.end()) {
+			ecount -= it1->second.size();
+			edges.erase(it1);
+			for (auto it2 = edges.begin(); it2 != edges.end(); ++it2)
+				ecount -= it2->second.erase(n);
+			return true;
+		}
+		return false;
 	}
 
 	bool graph::add_edge(int n1, int n2)
 	{
-		auto itr1 = edges.find(n1);
-		auto itr2 = edges.find(n2);
-		if (itr1 != edges.end() and itr2 != edges.end()) {
-			bool is_added = edges[n1].insert(n2).second;
+		auto it1 = edges.find(n1);
+		auto it2 = edges.find(n2);
+		if (it1 != edges.end() and it2 != edges.end()) {
+			bool is_added = it1->second.insert(n2).second;
 			if (is_added)
 				++ecount;
 			return is_added;
@@ -42,18 +48,18 @@ namespace graphs {
 	vector<int> graph::nodes()
 	{
 		vector<int> vertices;
-		for (auto itr = edges.begin(); itr != edges.end(); ++itr)
-			vertices.push_back(itr->first);
+		for (auto it = edges.begin(); it != edges.end(); ++it)
+			vertices.push_back(it->first);
 		return vertices;
 	}
 
 	vector<pair<int, int>> graph::out_edges(int n)
 	{
 		vector<pair<int, int>> arrows;
-		auto itr1 = edges.find(n);
-		if (itr1 != edges.end()) {
-			for (auto itr = edges[n].begin(); itr != edges[n].end(); ++itr)
-				arrows.push_back({ n, *itr });
+		auto it1 = edges.find(n);
+		if (it1 != edges.end()) {
+			for (auto it2 = it1->second.begin(); it2 != it1->second.end(); ++it2)
+				arrows.push_back({ n, *it2 });
 		}
 		return arrows;
 	}
@@ -70,10 +76,10 @@ namespace graphs {
 
 	ostream& operator<<(ostream& out, const graph& g)
 	{
-		for (auto itr1 = g.edges.begin(); itr1 != g.edges.end(); ++itr1) {
-			out << itr1->first << " : ";
-			for (auto itr2 = itr1->second.begin(); itr2 != itr1->second.end(); ++itr2)
-				out << *itr2 << ' ';
+		for (auto it1 = g.edges.begin(); it1 != g.edges.end(); ++it1) {
+			out << it1->first << " : ";
+			for (auto it2 = it1->second.begin(); it2 != it1->second.end(); ++it2)
+				out << *it2 << ' ';
 			out << ';' << endl;
 		}
 		return out;
@@ -83,13 +89,13 @@ namespace graphs {
 	{
 		graph temp;
 
-		while (true) {
+		for (;;) {
 			int source;
 			char colon;
 			if (!(in >> source >> colon) or colon != ':')
 				break;
-			unordered_set<int> targets;
-			for (int target; in >> target; targets.insert(target);)
+			set<int> targets;
+			for (int target; in >> target; targets.insert(target))
 				in.clear();
 			char semicolon;
 			if (!(in >> semicolon) or semicolon != ';')
@@ -108,9 +114,9 @@ namespace graphs {
 	graph graph::reverse(const graph& g)
 	{
 		graph temp;
-		for (auto itr1 = g.edges.begin(); itr1 != g.edges.end(); ++itr1) {
-			for (auto itr2 = itr1->second.begin(); itr2 != itr1->second.end(); ++itr2) {
-				temp.edges[*itr2].insert(itr1->first);
+		for (auto it1 = g.edges.begin(); it1 != g.edges.end(); ++it1) {
+			for (auto it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
+				temp.edges[*it2].insert(it1->first);
 			}
 		}
 		return temp;
@@ -119,30 +125,30 @@ namespace graphs {
 	vector<int> graph::shortest_path(graph& g, int n1, int n2)
 	{
 		vector<int> path;
-		auto itr1 = g.edges.find(n1);
-		auto itr2 = g.edges.find(n2);
+		auto it1 = g.edges.find(n1);
+		auto it2 = g.edges.find(n2);
 
-		if (itr1 == g.edges.end() or itr2 == g.edges.end())
+		if (it1 == g.edges.end() or it2 == g.edges.end())
 			return path;
 
-		unordered_map<int, bool> discovered;
-		unordered_map<int, int> inverted_arrows;
+		map<int, bool> discovered;
+		map<int, int> inverted_arrows;
 		queue<int> sources;
-		for (auto itr3 = g.edges.begin(); itr3 != g.edges.end(); ++itr3)
-			discovered[itr3->first] = false;
+		for (auto it3 = g.edges.begin(); it3 != g.edges.end(); ++it3)
+			discovered[it3->first] = false;
 		discovered[n1] = true;
 		sources.push(n1);
 
 		while (!sources.empty()) {
 			int source = sources.front();
 			sources.pop();
-			for (auto itr4 = g.edges[source].begin(); itr4 != g.edges[source].end(); ++itr4) {
-				if (discovered[*itr4] == false) {
-					discovered[*itr4] = true;
-					inverted_arrows[*itr4] = source;
-					sources.push(*itr4);
+			for (auto it4 = g.edges[source].begin(); it4 != g.edges[source].end(); ++it4) {
+				if (discovered[*it4] == false) {
+					discovered[*it4] = true;
+					inverted_arrows[*it4] = source;
+					sources.push(*it4);
 
-					if (*itr4 == n2) {
+					if (*it4 == n2) {
 						for (int target = n2; target != n1; target = inverted_arrows[target])
 							path.push_back(target);
 						path.push_back(n1);
