@@ -1,8 +1,8 @@
 #pragma once
 
 #include <iostream>
-#include <map>
-#include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 using namespace std;
@@ -27,7 +27,7 @@ namespace graphs {
 		static vector<int> shortest_path(graph& g, int n1, int n2);
 
 	private:
-		map<int, set<int>> edges;
+		unordered_map<int, unordered_set<int>> edges;
 		int ecount = 0;
 	};
 

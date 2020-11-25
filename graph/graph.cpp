@@ -94,9 +94,9 @@ namespace graphs {
 			char colon;
 			if (!(in >> source >> colon) or colon != ':')
 				break;
-			set<int> targets;
-			for (int target; in >> target; targets.insert(target))
-				in.clear();
+			unordered_set<int> targets;
+			for (int target; in >> target; targets.insert(target));
+			in.clear();
 			char semicolon;
 			if (!(in >> semicolon) or semicolon != ';')
 				break;
@@ -131,20 +131,15 @@ namespace graphs {
 		if (it1 == g.edges.end() or it2 == g.edges.end())
 			return path;
 
-		map<int, bool> discovered;
-		map<int, int> inverted_arrows;
+		unordered_map<int, int> inverted_arrows;
 		queue<int> sources;
-		for (auto it3 = g.edges.begin(); it3 != g.edges.end(); ++it3)
-			discovered[it3->first] = false;
-		discovered[n1] = true;
 		sources.push(n1);
 
 		while (!sources.empty()) {
 			int source = sources.front();
 			sources.pop();
 			for (auto it4 = g.edges[source].begin(); it4 != g.edges[source].end(); ++it4) {
-				if (discovered[*it4] == false) {
-					discovered[*it4] = true;
+				if (!inverted_arrows.count(*it4)) {
 					inverted_arrows[*it4] = source;
 					sources.push(*it4);
 
