@@ -111,7 +111,7 @@ namespace graphs {
 		return in;
 	}
 
-	graph graph::reverse(const graph& g)
+	graph graph::transpose(const graph& g)
 	{
 		graph temp;
 		for (auto it1 = g.edges.begin(); it1 != g.edges.end(); ++it1) {
@@ -147,13 +147,32 @@ namespace graphs {
 						for (int target = n2; target != n1; target = inverted_arrows[target])
 							path.push_back(target);
 						path.push_back(n1);
-						std::reverse(path.begin(), path.end());
+						reverse(path.begin(), path.end());
 						return path;
 					}
 				}
 			}
 		}
 		return path;
+	}
+
+	vector<int> graph::depth_first_search(graph& g, int n)
+	{
+		vector<int> search;
+		unordered_map<int, bool> discovered;
+		for (auto it = g.edges.begin(); it != g.edges.end(); ++it)
+			discovered[it->first] = false;
+		DFS_rec(g, n, discovered, search);
+		return search;
+	}
+
+	void graph::DFS_rec(graph& g, int n, unordered_map<int, bool>& discovered, vector<int>& search)
+	{
+		discovered[n] = true;
+		search.push_back(n);
+		for (auto it = g.edges[n].begin(); it != g.edges[n].end(); ++it)
+			if (!discovered[*it])
+				DFS_rec(g, *it, discovered, search);
 	}
 
 }
